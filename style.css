@@ -1,0 +1,10 @@
+.eventos li {
+    text-decoration: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+.eventos button {
+    margin: 0 5px;
+}
