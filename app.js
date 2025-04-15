@@ -1,25 +1,7 @@
+//----- Variables de inicio --------------------//
 let carritoPrecio = 0
 
-const listaDeEventos = [
-    {
-        id: 1,
-        name:"LIVE CULTUR Halloween",
-        start_date:"31/10/2025",
-        price: 150
-    },
-    {
-        id: 2,
-        name:"Lanzamiento de reserbo",
-        start_date:"05/05/2025",
-        price: 100
-    },
-    {
-        id: 3,
-        name:"Listening Party en cincodoce",
-        start_date:"14/07/2025",
-        price: 200
-    }
-];
+//----- Funciones --------------------//
 
 function convertirFecha(fecha) {
     const [day, month, year] = fecha.split('/').map(Number);
@@ -41,27 +23,41 @@ function renderizarEventos(eventos) {
     const contenedorDeEventos = document.querySelector(".eventos ul");
     if (!contenedorDeEventos) return;
 
-    contenedorDeEventos.innerHTML = "";
+    while (contenedorDeEventos.firstChild) {
+        contenedorDeEventos.removeChild(contenedorDeEventos.firstChild);
+    }
 
     if (!eventos || eventos.length === 0) {
-        contenedorDeEventos.innerHTML = '<p>Próximos eventos por anunciarse</p>';
+        const mensaje = document.createElement("p");
+        mensaje.textContent = "Próximos eventos por anunciarse";
+        contenedorDeEventos.appendChild(mensaje);
         return;
     }
 
     eventos.forEach((evento, index) => {
         const li = document.createElement("li");
-        
-        li.innerHTML = 
-            `<p>${index + 1}. ${evento.name} - ${evento.start_date} - $${evento.price}</p>
-            <button class="minusButton">-</button>
-                <p class="cantidad">0</p>
-            <button class="plusButton">+</button>`;
+
+        const pEvento = document.createElement("p");
+        pEvento.textContent = `${index + 1}. ${evento.name} - ${evento.start_date} - $${evento.price}`;
+
+        const minusButton = document.createElement("button");
+        minusButton.textContent = "-";
+        minusButton.classList.add("minusButton");
+
+        const cantidadP = document.createElement("p");
+        cantidadP.classList.add("cantidad");
+        cantidadP.textContent = "0";
+
+        const plusButton = document.createElement("button");
+        plusButton.textContent = "+";
+        plusButton.classList.add("plusButton");
+
+        li.appendChild(pEvento);
+        li.appendChild(minusButton);
+        li.appendChild(cantidadP);
+        li.appendChild(plusButton);
 
         contenedorDeEventos.appendChild(li);
-
-        const cantidadP = li.querySelector(".cantidad");
-        const plusButton = li.querySelector(".plusButton");
-        const minusButton = li.querySelector(".minusButton");
 
         let cantidad = 0;
 
@@ -82,13 +78,26 @@ function renderizarEventos(eventos) {
                 actualizarCarrito();
             }
         });
-
     });
+    }
+
+async function traerDataEventos() {
+  
+    try {
+        const dataBaseResponse = await fetch('./dataBase.json');
+        const listaDeEventos = await dataBaseResponse.json();
+        const eventosOrdenados = ordenarEventos(listaDeEventos);
+        renderizarEventos(eventosOrdenados);
+    } catch (error) {
+        let eventosOrdenados = '';
+        renderizarEventos(eventosOrdenados);
+        console.log ('Hubo un error al traer los eventos', error, error.message);
+    }
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-const eventosOrdenados = ordenarEventos(listaDeEventos);
-renderizarEventos(eventosOrdenados);
+    traerDataEventos();
 
 document.querySelector("#mostrarCarrito").addEventListener("click", () => {
     let accionCarrito = prompt('El total de tu carrito es $' + carritoPrecio + '\nPresiona 1 para regresar o 2 para proceder a pagar');
