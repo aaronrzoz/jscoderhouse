@@ -1,20 +1,20 @@
 [
-    {
-      "id": 1,
-      "name": "LIVE CULTUR Halloween",
-      "start_date": "31/10/2025",
-      "price": 150
-    },
-    {
-      "id": 2,
-      "name": "Lanzamiento de reserbo",
-      "start_date": "05/05/2025",
-      "price": 100
-    },
-    {
-      "id": 3,
-      "name": "Listening Party en cincodoce",
-      "start_date": "14/07/2025",
-      "price": 200
-    }
+  {
+    "id": 1,
+    "name": "LIVE CULTUR Halloween",
+    "start_date": "31/10/2025",
+    "price": 150
+  },
+  {
+    "id": 2,
+    "name": "Lanzamiento de reserbo",
+    "start_date": "05/05/2025",
+    "price": 100
+  },
+  {
+    "id": 3,
+    "name": "Listening Party en cincodoce",
+    "start_date": "14/07/2025",
+    "price": 200
+  }
 ]

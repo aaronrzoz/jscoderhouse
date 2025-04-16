@@ -1,5 +1,7 @@
 //----- Variables de inicio --------------------//
-let carritoPrecio = 0
+let carritoPrecio = parseFloat(localStorage.getItem('carritoPrecio') || '0');
+let cantidadesGuardadas = JSON.parse(localStorage.getItem('cantidadesEventos') || '{}');
+let eventosOrdenados = [];
 
 //----- Funciones --------------------//
 
@@ -46,7 +48,8 @@ function renderizarEventos(eventos) {
 
         const cantidadP = document.createElement("p");
         cantidadP.classList.add("cantidad");
-        cantidadP.textContent = "0";
+        let cantidad = cantidadesGuardadas[evento.name] || 0;
+        cantidadP.textContent = cantidad;
 
         const plusButton = document.createElement("button");
         plusButton.textContent = "+";
@@ -59,13 +62,14 @@ function renderizarEventos(eventos) {
 
         contenedorDeEventos.appendChild(li);
 
-        let cantidad = 0;
-
         plusButton.addEventListener("click", () => {
             if (cantidad < 5) {
                 cantidad++;
                 cantidadP.textContent = cantidad;
                 carritoPrecio += evento.price;
+                cantidadesGuardadas[evento.name] = cantidad;
+                localStorage.setItem('cantidadesEventos', JSON.stringify(cantidadesGuardadas));
+                localStorage.setItem('carritoPrecio', carritoPrecio);
                 actualizarCarrito();
             }
         });
@@ -75,6 +79,9 @@ function renderizarEventos(eventos) {
                 cantidad--;
                 cantidadP.textContent = cantidad;
                 carritoPrecio -= evento.price;
+                cantidadesGuardadas[evento.name] = cantidad;
+                localStorage.setItem('cantidadesEventos', JSON.stringify(cantidadesGuardadas));
+                localStorage.setItem('carritoPrecio', carritoPrecio);
                 actualizarCarrito();
             }
         });
@@ -86,21 +93,33 @@ async function traerDataEventos() {
     try {
         const dataBaseResponse = await fetch('./dataBase.json');
         const listaDeEventos = await dataBaseResponse.json();
-        const eventosOrdenados = ordenarEventos(listaDeEventos);
+        eventosOrdenados = ordenarEventos(listaDeEventos);
         renderizarEventos(eventosOrdenados);
     } catch (error) {
-        let eventosOrdenados = '';
+        eventosOrdenados = '';
         renderizarEventos(eventosOrdenados);
         console.log ('Hubo un error al traer los eventos', error, error.message);
     }
 
 }
 
+//----- Inicializador --------------------//
+
 document.addEventListener("DOMContentLoaded", () => {
     traerDataEventos();
+    actualizarCarrito();
 
 document.querySelector("#mostrarCarrito").addEventListener("click", () => {
     let accionCarrito = prompt('El total de tu carrito es $' + carritoPrecio + '\nPresiona 1 para regresar o 2 para proceder a pagar');
+})
+
+document.querySelector("#borrarCarrito").addEventListener("click", () => {
+    localStorage.setItem('carritoPrecio', '0');
+    carritoPrecio = 0;
+    actualizarCarrito();
+    localStorage.setItem('cantidadesEventos', '{}');
+    cantidadesGuardadas = {};
+    renderizarEventos(eventosOrdenados);
 })
 
 });
