@@ -48,7 +48,7 @@ function renderizarEventos(eventos) {
 
         const cantidadP = document.createElement("p");
         cantidadP.classList.add("cantidad");
-        let cantidad = cantidadesGuardadas[evento.name] || 0;
+        let cantidad = cantidadesGuardadas[evento.name]?.cantidad  || 0;
         cantidadP.textContent = cantidad;
 
         const plusButton = document.createElement("button");
@@ -66,10 +66,12 @@ function renderizarEventos(eventos) {
             if (cantidad < 5) {
                 cantidad++;
                 cantidadP.textContent = cantidad;
+                let precioXEvento = cantidad*evento.price;
                 carritoPrecio += evento.price;
-                cantidadesGuardadas[evento.name] = cantidad;
+                cantidadesGuardadas[evento.name] = {cantidad, precioXEvento};
                 localStorage.setItem('cantidadesEventos', JSON.stringify(cantidadesGuardadas));
                 localStorage.setItem('carritoPrecio', carritoPrecio);
+                mostrarCarrito();
                 actualizarCarrito();
             }
         });
@@ -78,15 +80,22 @@ function renderizarEventos(eventos) {
             if (cantidad > 0) {
                 cantidad--;
                 cantidadP.textContent = cantidad;
+                let precioXEvento = cantidad*evento.price;
                 carritoPrecio -= evento.price;
-                cantidadesGuardadas[evento.name] = cantidad;
+                if (cantidad === 0) {
+                    delete cantidadesGuardadas[evento.name]; // Elimina el evento del objeto
+                } else {
+                    let precioXEvento = cantidad * evento.price;
+                    cantidadesGuardadas[evento.name] = { cantidad, precioXEvento };
+                }
                 localStorage.setItem('cantidadesEventos', JSON.stringify(cantidadesGuardadas));
                 localStorage.setItem('carritoPrecio', carritoPrecio);
+                mostrarCarrito();
                 actualizarCarrito();
             }
         });
     });
-    }
+}
 
 async function traerDataEventos() {
   
@@ -103,23 +112,55 @@ async function traerDataEventos() {
 
 }
 
+function mostrarCarrito() {
+    const datosCarrito = JSON.parse(localStorage.getItem('cantidadesEventos'));
+    desgloceCarrito(datosCarrito);
+}
+
+function desgloceCarrito(datosCarrito) {
+
+    const contenedorDesgloceCarrito = document.querySelector("#desgloceCarrito")
+    if (!contenedorDesgloceCarrito) return
+
+    while (contenedorDesgloceCarrito.firstChild) {
+        contenedorDesgloceCarrito.removeChild(contenedorDesgloceCarrito.firstChild);
+    }
+
+    if (!datosCarrito || Object.keys(datosCarrito).length === 0) {
+        const mensaje = document.createElement("p");
+        mensaje.textContent = 'Todavía no tienes productos en el carrito'
+        contenedorDesgloceCarrito.appendChild(mensaje)
+    }
+
+    for (const [nombre, datos] of Object.entries(datosCarrito)) {
+        const cantidad = Number(datos.cantidad);
+        const subtotal = Number(datos.precioXEvento);
+
+        if (cantidad > 0) {
+            const mensaje = document.createElement("p");
+            mensaje.textContent = `${nombre} - Boletos: ${cantidad} - Subtotal: $${subtotal.toFixed(2)}`;
+            contenedorDesgloceCarrito.appendChild(mensaje)
+        }
+    }
+
+}
+
 //----- Inicializador --------------------//
 
 document.addEventListener("DOMContentLoaded", () => {
+
     traerDataEventos();
     actualizarCarrito();
+    mostrarCarrito();
 
-document.querySelector("#mostrarCarrito").addEventListener("click", () => {
-    let accionCarrito = prompt('El total de tu carrito es $' + carritoPrecio + '\nPresiona 1 para regresar o 2 para proceder a pagar');
-})
-
-document.querySelector("#borrarCarrito").addEventListener("click", () => {
-    localStorage.setItem('carritoPrecio', '0');
-    carritoPrecio = 0;
-    actualizarCarrito();
-    localStorage.setItem('cantidadesEventos', '{}');
-    cantidadesGuardadas = {};
-    renderizarEventos(eventosOrdenados);
-})
+    document.querySelector("#borrarCarrito").addEventListener("click", () => {
+        localStorage.setItem('carritoPrecio', '0');
+        carritoPrecio = 0;
+        actualizarCarrito();
+        localStorage.setItem('cantidadesEventos', '{}');
+        cantidadesGuardadas = {};
+        renderizarEventos(eventosOrdenados);
+        mostrarCarrito();
+    })
 
 });
