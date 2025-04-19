@@ -117,6 +117,16 @@ function mostrarCarrito() {
     desgloceCarrito(datosCarrito);
 }
 
+function borrarCarrito() {
+    localStorage.setItem('carritoPrecio', '0');
+    carritoPrecio = 0;
+    actualizarCarrito();
+    localStorage.setItem('cantidadesEventos', '{}');
+    cantidadesGuardadas = {};
+    renderizarEventos(eventosOrdenados);
+    mostrarCarrito();
+}
+
 function desgloceCarrito(datosCarrito) {
 
     const contenedorDesgloceCarrito = document.querySelector("#desgloceCarrito")
@@ -154,13 +164,34 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarCarrito();
 
     document.querySelector("#borrarCarrito").addEventListener("click", () => {
-        localStorage.setItem('carritoPrecio', '0');
-        carritoPrecio = 0;
-        actualizarCarrito();
-        localStorage.setItem('cantidadesEventos', '{}');
-        cantidadesGuardadas = {};
-        renderizarEventos(eventosOrdenados);
-        mostrarCarrito();
-    })
+        borrarCarrito();
+    });
+
+    document.querySelector("#comprar").addEventListener("click", () => {
+        if (!carritoPrecio || carritoPrecio === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Carrito vacio',
+                text: 'Añade boletos a tu carrito para poder comprar',
+            });
+        } else {
+            Swal.fire({
+                icon: 'question',
+                title: 'Finaliza tu compra',
+                text: '¿Estás segur@ de finalizar tu compra?',
+                confirmButtonText: 'Sí, comprar :)',
+                cancelButtonText: 'No, volver',
+                showCancelButton: 'true'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    borrarCarrito();
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Completada!',
+                        text: 'Gracias por tu compra',
+                    });
+                }});
+        }
+    });
 
 });
